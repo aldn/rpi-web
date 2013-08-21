@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>rpi control</title>
+    <style type="text/css">
+       .error{ color:red; font-weight:bold; }
+       .button{ height: 50px; width: 85px; }
+    </style>
+    <script src="/jquery.js"> </script>
+    <script language="JavaScript" type="text/javascript">
+
+
+function OMXPlayVideoFile(name)
+{
+    $.get('/mov_player.cgi', { title : name });
+}
+
+function OMXPlayURL(name)
+{
+    $.get('/youtube_player.cgi', { title : name } );
+}
+
+
+function OMXSendCommand(id)
+{
+    $.get('omxplayer_command.cgi', {'id' : id});
+}
+
+
+function Init()
+{
+}
+
+</script>
+
+</head>
+<body>
+      <h1>rpi control</h1>
+      <p> <span>Play media file:</span> &nbsp;&nbsp; <input id="media_name" type="text" size="100" value=""><button onclick="OMXPlayVideoFile($('#media_name').val());">PLAY</button> </p>
+      <p> <span>Play YouTube:</span> &nbsp;&nbsp; <input id="yt_name" type="text" size="100" value=""><button onclick="OMXPlayURL($('#yt_name').val());">PLAY</button> </p>
+
+			<table cellspacing="5" cellpadding="0" border="0">
+				<tr>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('voldown');">VOLUME -</button>
+					</td>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('play');">PLAY</button>
+					</td>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('volup');">VOLUME +</button>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('seek-30');">SEEK -30</button>
+					</td>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('pause');">PAUSE</button>
+					</td>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('seek30');">SEEK +30</button>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('seek-600');">SEEK -600</button>
+					</td>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('stop');">STOP</button>
+					</td>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('seek600');">SEEK +600</button>
+					</td>
+				</tr>
+				<tr><td colspan="3"><hr></td></tr>
+				<tr>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('speedup');">SPEED +</button>
+					</td>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('nextchapter');">NEXT CHAPTER</button>
+					</td>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('nextaudio');">NEXT AUDIO</button>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('speeddown');">SPEED -</button>
+					</td>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('prevchapter');">PREV CHAPTER</button>
+					</td>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('prevaudio');">PREV AUDIO</button>
+					</td>
+				</tr>
+				<tr><td colspan="3"><hr></td></tr>
+				<tr>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('prevsubtitles');">PREV SUBTITLES</button>
+					</td>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('togglesubtitles');">TOGGLE SUBTITLES</button>
+					</td>
+					<td>
+						<button type="button" class="button" onclick="OMXSendCommand('nextsubtitles');">NEXT SUBTITLES</button>
+					</td>
+				</tr>
+			</table>
+
+
+
+      <script type="text/javascript">
+         Init();
+      </script>
+</body>
+</html>
+
+
+
