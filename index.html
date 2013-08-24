@@ -5,118 +5,246 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rpi control</title>
     <style type="text/css">
-       .error{ color:red; font-weight:bold; }
-       .button{ height: 50px; width: 85px; }
+        body {
+            font-family: sans-serif;
+        }
+        .error {
+            color:red;
+            font-weight:bold;
+        }
+        .button{
+            height: 50px;
+            width: 85px;
+        }
+        #fs_path {
+            margin-top: 1em;
+            margin-bottom: 1em;
+            font-size: 120%;
+        }
+        #fs_list {
+            margin-top: 1em;
+            margin-bottom: 1em;
+        }
+        .fs_list_item { 
+            padding: 3px;
+            margin: 3px;
+        }
     </style>
     <script src="/jquery.js"> </script>
     <script language="JavaScript" type="text/javascript">
 
 
-function OMXPlayVideoFile(name)
+function omx_playvideo(name)
 {
     $.get('/mov_player.cgi', { title : name });
 }
 
-function OMXPlayURL(name)
+
+function omx_play_file(path)
+{
+    $.get('/mov_player.cgi', { 'path' : path });
+}
+
+function omx_playurl(name)
 {
     $.get('/youtube_player.cgi', { title : name } );
 }
 
 
-function OMXSendCommand(id)
+function omx_command(id)
 {
     $.get('omxplayer_command.cgi', {'id' : id});
 }
 
 
-function Init()
+var fs_path = [];
+
+// init fs_path list
+function fs_path_init()
 {
+    fs_path.push('/');
+    fs_path.push('mnt');
+    fs_path.push('alice');
+}
+
+// reflect changes to fs_path in the webpage div
+function fs_path_update_ui()
+{
+    tmp = '';
+    for (var i in fs_path)
+    {
+        tmp += '<span><a href="javascript:fs_path_select('+i+');">' + fs_path[i] + '</a></span>' ;
+        if (i != fs_path.length - 1)
+        {
+            tmp += ' > ';
+        }
+    }
+    $('#fs_path').html(tmp);
+}
+
+// concatenate items in fs_path to make a unix path
+function fs_path_make_unix()
+{
+    return fs_path.join('/');
+}
+
+// called when a path element in the div is selected
+function fs_path_select(index)
+{
+    // chop off all path items with higher index than given.
+    fs_path.length = index + 1
+    // show updated fs_path 
+    fs_path_update_ui();
+    
+    $('#fs_list').html('...sending request...');
+    
+    unix_path = fs_path_make_unix();
+    $.get('fs_list.cgi', {'path' : unix_path}, fs_list_receiver, 'json');
+}
+
+
+// add a new path element to the end of fs_path and select it
+function fs_path_append(item)
+{
+    fs_path.push(item);
+    fs_path_select(fs_path.length - 1);
+}
+
+// ajax receiver. Called when fs_list.cgi is complete.
+// parameter - list of directories and files
+function fs_list_receiver(json)
+{
+    $('#fs_list').empty();
+    $.each(json, function(i,e)
+    {
+        tmp = '';
+        if (e.is_dir)
+        {
+            tmp += '<div class="fs_list_item"><a href="javascript:fs_path_append(\''+e.name+'\')">';
+            tmp += e.name;
+            tmp += '</a></div>';
+        }
+        else
+        {
+            tmp += '<div class="fs_list_item" onclick="fs_list_select(\''+e.name+'\')">';
+            tmp += e.name;
+            tmp += '</a></div>';
+        }
+        
+        $('#fs_list').append(tmp);
+    });
+}
+
+function fs_list_select(item)
+{
+    omx_play_file(fs_path_make_unix() + '/' + item);
+    //$('#media_name').val(item);
+}
+
+
+function init()
+{
+    fs_path_init();
+    fs_path_select(fs_path.length - 1);
 }
 
 </script>
 
 </head>
 <body>
-      <h1>rpi control</h1>
-      <p> <span>Play media file:</span> &nbsp;&nbsp; <input id="media_name" type="text" size="100" value=""><button onclick="OMXPlayVideoFile($('#media_name').val());">PLAY</button> </p>
-      <p> <span>Play YouTube:</span> &nbsp;&nbsp; <input id="yt_name" type="text" size="100" value=""><button onclick="OMXPlayURL($('#yt_name').val());">PLAY</button> </p>
+    <h1>rpi control</h1>
+    
+    <div  style="float: left">
+        <p> <span>Play media file:</span><br>
+            <div id="fs_nav">
+                <div id="fs_path"></div>
+                <div id="fs_list"></div>
+                <input id="media_name" type="text" size="50" value=""><button onclick="omx_playvideo($('#media_name').val());">PLAY</button>
+            </div>
+         </p>
+        <p> <span>Play YouTube:</span><br>
+        <input id="yt_name" type="text" size="50" value=""><button onclick="omx_playurl($('#yt_name').val());">PLAY</button> </p>
+    </div>
 
-			<table cellspacing="5" cellpadding="0" border="0">
-				<tr>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('voldown');">VOLUME -</button>
-					</td>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('play');">PLAY</button>
-					</td>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('volup');">VOLUME +</button>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('seek-30');">SEEK -30</button>
-					</td>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('pause');">PAUSE</button>
-					</td>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('seek30');">SEEK +30</button>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('seek-600');">SEEK -600</button>
-					</td>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('stop');">STOP</button>
-					</td>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('seek600');">SEEK +600</button>
-					</td>
-				</tr>
-				<tr><td colspan="3"><hr></td></tr>
-				<tr>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('speedup');">SPEED +</button>
-					</td>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('nextchapter');">NEXT CHAPTER</button>
-					</td>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('nextaudio');">NEXT AUDIO</button>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('speeddown');">SPEED -</button>
-					</td>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('prevchapter');">PREV CHAPTER</button>
-					</td>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('prevaudio');">PREV AUDIO</button>
-					</td>
-				</tr>
-				<tr><td colspan="3"><hr></td></tr>
-				<tr>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('prevsubtitles');">PREV SUBTITLES</button>
-					</td>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('togglesubtitles');">TOGGLE SUBTITLES</button>
-					</td>
-					<td>
-						<button type="button" class="button" onclick="OMXSendCommand('nextsubtitles');">NEXT SUBTITLES</button>
-					</td>
-				</tr>
-			</table>
+    <div  style="position: fixed; top: 1em; right: 1em;">
+        <table cellspacing="5" cellpadding="0" border="0">
+            <tr>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('voldown');">VOLUME -</button>
+                </td>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('play');">PLAY</button>
+                </td>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('volup');">VOLUME +</button>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('seek-30');">SEEK -30</button>
+                </td>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('pause');">PAUSE</button>
+                </td>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('seek30');">SEEK +30</button>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('seek-600');">SEEK -600</button>
+                </td>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('stop');">STOP</button>
+                </td>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('seek600');">SEEK +600</button>
+                </td>
+            </tr>
+            <tr><td colspan="3"><hr></td></tr>
+            <tr>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('speedup');">SPEED +</button>
+                </td>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('nextchapter');">NEXT CHAPTER</button>
+                </td>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('nextaudio');">NEXT AUDIO</button>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('speeddown');">SPEED -</button>
+                </td>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('prevchapter');">PREV CHAPTER</button>
+                </td>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('prevaudio');">PREV AUDIO</button>
+                </td>
+            </tr>
+            <tr><td colspan="3"><hr></td></tr>
+            <tr>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('prevsubtitles');">PREV SUBTITLES</button>
+                </td>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('togglesubtitles');">TOGGLE SUBTITLES</button>
+                </td>
+                <td>
+                    <button type="button" class="button" onclick="omx_command('nextsubtitles');">NEXT SUBTITLES</button>
+                </td>
+            </tr>
+        </table>
+    </div>
 
 
 
-      <script type="text/javascript">
-         Init();
-      </script>
+
+    <script type="text/javascript">
+     init();
+    </script>
 </body>
 </html>
 
