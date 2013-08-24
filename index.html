@@ -135,10 +135,10 @@ function fs_list_receiver(json)
     });
 }
 
+// called when a file or directory is clicked/touched in fs_list
 function fs_list_select(item)
 {
     omx_play_file(fs_path_make_unix() + '/' + item);
-    //$('#media_name').val(item);
 }
 
 
@@ -155,11 +155,11 @@ function init()
     <h1>rpi control</h1>
     
     <div  style="float: left">
-        <p> <span>Play media file:</span><br>
+        <p> <span>Browse for & play a media file:</span><br>
             <div id="fs_nav">
                 <div id="fs_path"></div>
                 <div id="fs_list"></div>
-                <input id="media_name" type="text" size="50" value=""><button onclick="omx_playvideo($('#media_name').val());">PLAY</button>
+                <!-- <input id="media_name" type="text" size="50" value=""><button onclick="omx_playvideo($('#media_name').val());">PLAY</button> -->
             </div>
          </p>
         <p> <span>Play YouTube:</span><br>
