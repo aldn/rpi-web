@@ -7,7 +7,8 @@ then
 fi
 killall -INT omxplayer.bin 2>/dev/null
 /web/cls.sh
-omxplayer -p -o hdmi "$1" < $FIFO > /tmp/omxplayer.log 2>&1 &
+echo playing: $1 > /tmp/omxplayer.log
+omxplayer -p -o hdmi "$1" < $FIFO >> /tmp/omxplayer.log 2>&1 &
 sleep 1
 echo -n . > $FIFO
 

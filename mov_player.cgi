@@ -5,11 +5,13 @@ print "Content-Type: text/html; charset=UTF8\n"
 import cgi
 import subprocess
 
+def schedule(script, parameter):
+    p = subprocess.Popen(['at', 'now'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    print p.communicate(input='/web/%s "%s"' % (script, parameter))[0]
+
 form = cgi.FieldStorage()
+
 if "title" in form.keys():
-    param_title = form["title"].value
-    print subprocess.call(['echo /web/mov_player.sh \\"%s\\" | at now' % param_title], shell=True)
+    schedule('mov_player.sh', form["title"].value)
 elif "path" in form.keys():
-    param_path = form["path"].value
-    print param_path
-    print subprocess.call(['echo /web/media_player.sh \\"%s\\" | at now' % param_path], shell=True)
+    schedule('media_player.sh', form["path"].value)
